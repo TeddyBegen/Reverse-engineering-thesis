@@ -34,8 +34,8 @@ def unpack_apk(apk_path, output_dir):
 
 def analyze_with_ghidra(dex_files, output_dir, apk_name):
     """Run Ghidra headless analysis and export both BinExport and combined C/C++ code."""
-    ghidra_headless = "C:/Users/adamm/Thesis/Ghidra-Bindiff/ghidra_11.0.2_PUBLIC/support/analyzeHeadless.bat"
-    project_path = f"C:/Users/adamm/Thesis/Ghidra-Bindiff/projects/{apk_name}"
+    ghidra_headless = "C:/Users/tedlj/OneDrive/Desktop/ghidra/ghidra_11.0.3_PUBLIC/support/analyzeHeadless.bat"
+    project_path = f"C:/Users/tedlj/OneDrive/Desktop/Exjobb_Script/Project_path_temp{apk_name}"
 
     # Ensure project directory is ready
     if not os.path.exists(project_path):
@@ -54,8 +54,7 @@ def analyze_with_ghidra(dex_files, output_dir, apk_name):
         args = [
             ghidra_headless, project_path, "tempProject", "-import", dex_path,
             "-postScript", "ExportBinAndC", bin_export_path, c_output_path,  # Pass paths to script
-            "-scriptPath", "C:/Users/adamm/Thesis/Ghidra-Bindiff/ghidra_11.0.2_PUBLIC/Ghidra/Features/Base"
-                           "/ghidra_scripts",
+            "-scriptPath", "C:/Users/tedlj/OneDrive/Desktop/ghidra/ghidra_11.0.3_PUBLIC/Ghidra/Features/Base/ghidra_scripts",
             "-deleteProject"
         ]
         subprocess.run(args, check=True)
@@ -175,6 +174,23 @@ def run_bindiff(binexport1, binexport2, output_file):
         print(f"Error running BinDiff: {e}")
         print(f"Command: {' '.join(bindiff_cmd)}")
 
+def filter_function_table(merged_db_path):
+
+    # Connect to the database
+    conn = sqlite3.connect(merged_db_path)
+    cursor = conn.cursor()
+
+    # Create a new table called "filteredfunction"
+    cursor.execute('CREATE TABLE IF NOT EXISTS filteredfunction (id INT,address1 BIGINT,name1 TEXT,address2 BIGINT,name2 TEXT,similarity DOUBLE PRECISION,confidence DOUBLE PRECISION,flags INTEGER,algorithm SMALLINT,evaluate BOOLEAN,commentsported BOOLEAN,basicblocks INTEGER,edges INTEGER,instructions INTEGER,UNIQUE(address1, address2),PRIMARY KEY(id),FOREIGN KEY(algorithm) REFERENCES functionalgorithm(id))')  
+
+    # Copy rows from "function" table to "filteredfunction" table where "simularity" is less than 0
+    cursor.execute('INSERT INTO filteredfunction SELECT * FROM function WHERE similarity < 1')
+
+    # Commit the changes and close the connection
+    conn.commit()
+    conn.close()
+
+
 
 def main():
     apk1 = select_files()
@@ -201,6 +217,10 @@ def main():
 
     # Merge BinDiff files into one
     merge_bindiff_files(os.path.dirname(output_file))
+
+    # Filter the "function" table and copy the results to a new table
+    merge_db_path = os.path.join(os.path.dirname(output_file), "merged_bindiff_results.db")
+    filter_function_table(merge_db_path)
 
 
 if __name__ == "__main__":
