@@ -1,5 +1,5 @@
 #
-# Author: Adam Makowski
+# Authors: Adam Makowski, Ted Ljungsten
 #
 # 25/04/2024
 
