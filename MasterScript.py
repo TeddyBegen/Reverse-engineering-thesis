@@ -219,7 +219,7 @@ def find_lines_with_words(filename, target_words):
             line_counter += 1  # Increment the line counter
             for word in target_words:
                 if word in line:
-                    found_lines.append((word, line_counter))  # Append the word, line number, and line itself
+                    found_lines.append((word, line_counter))  # Append the word, line number
     
     return found_lines
 
