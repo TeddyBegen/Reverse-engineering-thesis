@@ -210,6 +210,19 @@ def create_function_list(database_path):
     print(f"Total function names from apk2 retrieved: {len(function_names_apk2)}")
 
 
+def find_lines_with_words(filename, target_words):
+    found_lines = []  # Define the variable "found_lines" as an empty list
+    line_counter = 0  # Initialize a line counter variable
+
+    with open(filename, 'r') as file:
+        for line in file:
+            line_counter += 1  # Increment the line counter
+            for word in target_words:
+                if word in line:
+                    found_lines.append((word, line_counter))  # Append the word, line number, and line itself
+    
+    return found_lines
+
 
 
 
@@ -220,6 +233,10 @@ def main():
     unpack_dir1 = f"output/unpacked_{os.path.splitext(os.path.basename(apk1))[0]}"
     unpack_dir2 = f"output/unpacked_{os.path.splitext(os.path.basename(apk2))[0]}"
     database_path = f"output/merged_bindiff_results.db"
+    c_file_path = f"output/merged_bindiff_results.c"
+
+    target_words = ['registration', ' ', '']
+
 
     unpack_apk(apk1, unpack_dir1)
     unpack_apk(apk2, unpack_dir2)
@@ -243,6 +260,10 @@ def main():
     # Filter the "function" table and copy the results to a new table
     merge_db_path = os.path.join(os.path.dirname(output_file), "merged_bindiff_results.db")
     filter_function_table(merge_db_path)
+
+    found_lines = find_lines_with_words(c_file_path, target_words)
+    print(found_lines)
+    print("\n")
 
 
 if __name__ == "__main__":
