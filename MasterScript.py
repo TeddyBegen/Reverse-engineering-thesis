@@ -1,7 +1,7 @@
 #
 # Authors: Adam Makowski, Ted Ljungsten
 #
-# 02/05/2024
+# 05/05/2024
 
 import subprocess
 import os
@@ -191,6 +191,27 @@ def filter_function_table(merged_db_path):
     conn.close()
 
 
+def create_function_list(database_path):
+    # Connect to the database
+    conn = sqlite3.connect(database_path)
+    cursor = conn.cursor()
+
+    # Retrieve function names from the database
+    cursor.execute("SELECT name1 FROM filteredfunction")  
+    function_names_apk1 = [row[0] for row in cursor.fetchall()]
+
+    cursor.execute("SELECT name2 FROM filteredfunction")  
+    function_names_apk2 = [row[0] for row in cursor.fetchall()]
+
+
+    # Close the database connection
+    conn.close()
+    print(f"Total function names from apk1 retrieved: {len(function_names_apk1)}")
+    print(f"Total function names from apk2 retrieved: {len(function_names_apk2)}")
+
+
+
+
 
 def main():
     apk1 = select_files()
@@ -198,6 +219,7 @@ def main():
 
     unpack_dir1 = f"output/unpacked_{os.path.splitext(os.path.basename(apk1))[0]}"
     unpack_dir2 = f"output/unpacked_{os.path.splitext(os.path.basename(apk2))[0]}"
+    database_path = f"output/merged_bindiff_results.db"
 
     unpack_apk(apk1, unpack_dir1)
     unpack_apk(apk2, unpack_dir2)
