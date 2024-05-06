@@ -1,3 +1,9 @@
+#Author: Ted Ljungsten
+#
+#Date: 06/05/2024
+#
+
+
 import sqlite3
 import re
 
