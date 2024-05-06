@@ -35,6 +35,11 @@ def create_function_list(database_path):
     cursor.execute("SELECT name2 FROM filteredfunction")  
     function_names_apk2 = [row[0] for row in cursor.fetchall()]
 
+    # Close the database connection
+    conn.close()
+    print(f"Total function names from apk1 retrieved: {len(function_names_apk1)}")
+    print(f"Total function names from apk2 retrieved: {len(function_names_apk2)}")
+
     return function_names_apk1, function_names_apk2
 
 
@@ -65,16 +70,17 @@ def find_lines_with_words(filename, target_words):
 def categorize_functions(functions, important, unimportant):
     categorized_functions = {'important': [], 'unimportant': [], 'unknown': []}
 
+    functions = [str(obj) for obj in functions]
+
     for function in functions:
+        function_lower = function.lower()  # Convert function name to lowercase
         for word in important:
-            word = word.lower()  # Convert to lower case
-            if word in function:
+            if word.lower() in function_lower:  # Convert keyword to lowercase before comparison
                 categorized_functions['important'].append(function)
                 break
         else:
             for word in unimportant:
-                word = word.lower()  # Convert to lower case
-                if word in function:
+                if word.lower() in function_lower:  # Convert keyword to lowercase before comparison
                     categorized_functions['unimportant'].append(function)
                     break
             else:
@@ -82,16 +88,17 @@ def categorize_functions(functions, important, unimportant):
 
     return categorized_functions
 
+
 def main():
     merged_db_path = "C:/Users/tedlj/OneDrive/Desktop/output7.2.0-7.2.3/unpacked_Signal_7.2.3_Apkpure/merged_bindiff_results.db"
     c_file_path = "C:/Users/tedlj/OneDrive/Desktop/output7.2.0-7.2.3/unpacked_Signal_7.2.3_Apkpure/classes5.c"
-    important_list = ['Invoke', 'Decrypt', 'Encrypt', 'Hash', 'Authenticate', 'Verify', 'Parse', 'Extract', 'Analyze', 'Recover']
-    unimportant_list = ['update']
+    important_list = ['invoke', 'decrypt', 'encrypt', 'hash', 'authenticate', 'verify', 'parse', 'extract', 'analyze', 'recover']
+    unimportant_list = ['button', 'label', 'textbox', 'checkbox', 'dropdown', 'menu', 'dialog', 'update']
     filter_function_table(merged_db_path)
-    target_words = create_function_list(merged_db_path)
-    found_lines = find_lines_with_words(c_file_path, target_words[1])
+    function_names_apk1, function_names_apk2 = create_function_list(merged_db_path)
+    found_lines = find_lines_with_words(c_file_path, function_names_apk1)
 
-    categorized_functions = categorize_functions(target_words, important_list, unimportant_list)
+    categorized_functions = categorize_functions(function_names_apk1, important_list, unimportant_list)
     
     print("Categorized Functions:")
     print("---------------------")
