@@ -121,20 +121,21 @@ def main():
 
     categorized_functions = categorize_functions(function_names_apk1, important_list, unimportant_list)
     
-    print("Categorized Functions:")
-    print("---------------------")
-    print("Important Functions:")
-    for function in categorized_functions['important']:
-        print(function)
-    print("---------------------")
-    print("Unimportant Functions:")
-    for function in categorized_functions['unimportant']:
-        print(function)
-    print("---------------------")
-    print("Unknown Functions:")
-    for function in categorized_functions['unknown']:
-        print(function)
-    print("---------------------")
+    with open('categorized_output.txt', 'w') as file:
+        file.write("Categorized Functions:\n")
+        file.write("---------------------\n")
+        file.write("Important Functions:\n")
+        for function in categorized_functions['important']:
+            file.write(function + "\n")
+        file.write("---------------------\n")
+        file.write("Unimportant Functions:\n")
+        for function in categorized_functions['unimportant']:
+            file.write(function + "\n")
+        file.write("---------------------\n")
+        file.write("Unknown Functions:\n")
+        for function in categorized_functions['unknown']:
+            file.write(function + "\n")
+        file.write("---------------------\n")
 
 if __name__ == "__main__":
     main()
