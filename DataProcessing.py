@@ -71,16 +71,19 @@ def categorize_functions(functions, important, unimportant):
     categorized_functions = {'important': [], 'unimportant': [], 'unknown': []}
 
     functions = [str(obj) for obj in functions]
+    
+    functions = [word.capitalize() for word in functions]
+    important = [word.capitalize() for word in important]
+    unimportant = [word.capitalize() for word in unimportant]
 
     for function in functions:
-        function_lower = function.lower()  # Convert function name to lowercase
         for word in important:
-            if word.lower() in function_lower:  # Convert keyword to lowercase before comparison
+            if word in function:  # Convert keyword to lowercase before comparison
                 categorized_functions['important'].append(function)
                 break
         else:
             for word in unimportant:
-                if word.lower() in function_lower:  # Convert keyword to lowercase before comparison
+                if word in function:  # Convert keyword to lowercase before comparison
                     categorized_functions['unimportant'].append(function)
                     break
             else:
@@ -88,12 +91,24 @@ def categorize_functions(functions, important, unimportant):
 
     return categorized_functions
 
+def read_keyword_list(file_path):
+    keyword_list = []
+    with open(file_path, 'r') as file:
+        for line in file:
+            keyword_list.append(line.strip())
+        print(f"Total keywords read from {file_path}: {len(keyword_list)}")
+    return keyword_list
+
 
 def main():
     merged_db_path = "C:/Users/tedlj/OneDrive/Desktop/output7.2.0-7.2.3/unpacked_Signal_7.2.3_Apkpure/merged_bindiff_results.db"
     c_file_path = "C:/Users/tedlj/OneDrive/Desktop/output7.2.0-7.2.3/unpacked_Signal_7.2.3_Apkpure/classes5.c"
-    important_list = ['invoke', 'decrypt', 'encrypt', 'hash', 'authenticate', 'verify', 'parse', 'extract', 'analyze', 'recover']
-    unimportant_list = ['button', 'label', 'textbox', 'checkbox', 'dropdown', 'menu', 'dialog', 'update']
+    
+
+    important_list = read_keyword_list('important_keywords.txt')
+    unimportant_list = read_keyword_list('unimportant_keywords.txt')
+    
+    
     filter_function_table(merged_db_path)
     function_names_apk1, function_names_apk2 = create_function_list(merged_db_path)
     found_lines = find_lines_with_words(c_file_path, function_names_apk1)
