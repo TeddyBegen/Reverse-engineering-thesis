@@ -1,4 +1,6 @@
 import sqlite3
+import re
+
 
 def filter_function_table(merged_db_path):
 
@@ -9,8 +11,12 @@ def filter_function_table(merged_db_path):
     # Create a new table called "filteredfunction"
     cursor.execute('CREATE TABLE IF NOT EXISTS filteredfunction (id INT,address1 BIGINT,name1 TEXT,address2 BIGINT,name2 TEXT,similarity DOUBLE PRECISION,confidence DOUBLE PRECISION,flags INTEGER,algorithm SMALLINT,evaluate BOOLEAN,commentsported BOOLEAN,basicblocks INTEGER,edges INTEGER,instructions INTEGER,UNIQUE(address1, address2),PRIMARY KEY(id),FOREIGN KEY(algorithm) REFERENCES functionalgorithm(id))')  
 
-    # Copy rows from "function" table to "filteredfunction" table where "simularity" is less than 0
-    cursor.execute('INSERT INTO filteredfunction SELECT * FROM function WHERE similarity < 1')
+    # Check if the "filteredfunction" table is empty
+    cursor.execute("SELECT COUNT(*) FROM filteredfunction")
+    result = cursor.fetchone()
+    if result[0] == 0:
+        # Copy rows from "function" table to "filteredfunction" table where "similarity" is less than 1
+        cursor.execute('INSERT INTO filteredfunction SELECT * FROM function WHERE similarity < 1')
 
     # Commit the changes and close the connection
     conn.commit()
@@ -29,6 +35,8 @@ def create_function_list(database_path):
     cursor.execute("SELECT name2 FROM filteredfunction")  
     function_names_apk2 = [row[0] for row in cursor.fetchall()]
 
+    return function_names_apk1, function_names_apk2
+
 
     # Close the database connection
     conn.close()
@@ -40,11 +48,65 @@ def find_lines_with_words(filename, target_words):
     found_lines = []  # Define the variable "found_lines" as an empty list
     line_counter = 0  # Initialize a line counter variable
 
-    with open(filename, 'r') as file:
+    with open(filename, 'r', encoding='utf-8') as file:
         for line in file:
             line_counter += 1  # Increment the line counter
-            for word in target_words:
-                if word in line:
-                    found_lines.append((word, line_counter))  # Append the word, line number, and line itself
+            if "org::" in line:  # Check if the line contains "void"
+                for word in target_words:
+                    if word in line:
+                        found_lines.append((word, line_counter))  # Append the word, line number
+                        target_words.remove(word)  # Remove the found word from the target_words list
+                        break
     
     return found_lines
+
+
+
+def categorize_functions(functions, important, unimportant):
+    categorized_functions = {'important': [], 'unimportant': [], 'unknown': []}
+
+    for function in functions:
+        for word in important:
+            word = word.lower()  # Convert to lower case
+            if word in function:
+                categorized_functions['important'].append(function)
+                break
+        else:
+            for word in unimportant:
+                word = word.lower()  # Convert to lower case
+                if word in function:
+                    categorized_functions['unimportant'].append(function)
+                    break
+            else:
+                categorized_functions['unknown'].append(function)
+
+    return categorized_functions
+
+def main():
+    merged_db_path = "C:/Users/tedlj/OneDrive/Desktop/output7.2.0-7.2.3/unpacked_Signal_7.2.3_Apkpure/merged_bindiff_results.db"
+    c_file_path = "C:/Users/tedlj/OneDrive/Desktop/output7.2.0-7.2.3/unpacked_Signal_7.2.3_Apkpure/classes5.c"
+    important_list = ['Invoke', 'Decrypt', 'Encrypt', 'Hash', 'Authenticate', 'Verify', 'Parse', 'Extract', 'Analyze', 'Recover']
+    unimportant_list = ['update']
+    filter_function_table(merged_db_path)
+    target_words = create_function_list(merged_db_path)
+    found_lines = find_lines_with_words(c_file_path, target_words[1])
+
+    categorized_functions = categorize_functions(target_words, important_list, unimportant_list)
+    
+    print("Categorized Functions:")
+    print("---------------------")
+    print("Important Functions:")
+    for function in categorized_functions['important']:
+        print(function)
+    print("---------------------")
+    print("Unimportant Functions:")
+    for function in categorized_functions['unimportant']:
+        print(function)
+    print("---------------------")
+    print("Unknown Functions:")
+    for function in categorized_functions['unknown']:
+        print(function)
+    print("---------------------")
+
+if __name__ == "__main__":
+    main()
