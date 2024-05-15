@@ -17,6 +17,8 @@ def filter_function_table(merged_db_path):
     # Create a new table called "filteredfunction"
     cursor.execute('CREATE TABLE IF NOT EXISTS filteredfunction (id INT,address1 BIGINT,name1 TEXT,address2 BIGINT,name2 TEXT,similarity DOUBLE PRECISION,confidence DOUBLE PRECISION,flags INTEGER,algorithm SMALLINT,evaluate BOOLEAN,commentsported BOOLEAN,basicblocks INTEGER,edges INTEGER,instructions INTEGER,UNIQUE(address1, address2),PRIMARY KEY(id),FOREIGN KEY(algorithm) REFERENCES functionalgorithm(id))')  
 
+   
+
     # Check if the "filteredfunction" table is empty
     cursor.execute("SELECT COUNT(*) FROM filteredfunction")
     result = cursor.fetchone()
@@ -107,8 +109,8 @@ def read_keyword_list(file_path):
 
 
 def main():
-    merged_db_path = "C:/Users/tedlj/OneDrive/Desktop/output7.2.0-7.2.3/unpacked_Signal_7.2.3_Apkpure/merged_bindiff_results.db"
-    c_file_path = "C:/Users/tedlj/OneDrive/Desktop/output7.2.0-7.2.3/unpacked_Signal_7.2.3_Apkpure/classes5.c"
+    merged_db_path = "C:/Users/tedlj/OneDrive/Desktop/output7.5.2-7.6.2/unpacked_Signal_7.5.2_Apkpure/merged_bindiff_results.db"
+    #c_file_path = "C:/Users/tedlj/OneDrive/Desktop/output7.2.0-7.2.3/unpacked_Signal_7.2.3_Apkpure/classes5.c"
     
 
     important_list = read_keyword_list('important_keywords.txt')
@@ -117,25 +119,25 @@ def main():
     
     filter_function_table(merged_db_path)
     function_names_apk1, function_names_apk2 = create_function_list(merged_db_path)
-    found_lines = find_lines_with_words(c_file_path, function_names_apk1)
+    #found_lines = find_lines_with_words(c_file_path, function_names_apk1)
 
-    categorized_functions = categorize_functions(function_names_apk1, important_list, unimportant_list)
+    categorized_functions = categorize_functions(function_names_apk2, important_list, unimportant_list)
     
     with open('categorized_output.txt', 'w') as file:
         file.write("Categorized Functions:\n")
-        file.write("---------------------\n")
+        file.write("---------------------------------------------------------------------\n")
         file.write("Important Functions:\n")
         for function in categorized_functions['important']:
             file.write(function + "\n")
-        file.write("---------------------\n")
+        file.write("---------------------------------------------------------------------\n")
         file.write("Unimportant Functions:\n")
         for function in categorized_functions['unimportant']:
             file.write(function + "\n")
-        file.write("---------------------\n")
+        file.write("---------------------------------------------------------------------\n")
         file.write("Unknown Functions:\n")
         for function in categorized_functions['unknown']:
             file.write(function + "\n")
-        file.write("---------------------\n")
+        file.write("---------------------------------------------------------------------\n")
 
 if __name__ == "__main__":
     main()

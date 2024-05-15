@@ -3,3 +3,11 @@ label
 update
 view
 menu
+initialize
+get
+display
+send
+upload
+new
+Username
+tostring
